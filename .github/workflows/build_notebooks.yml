@@ -31,15 +31,11 @@ jobs:
       - run: |
           #jupyter nbconvert --to html --output-dir='./html' --execute ./notebooks/fig_${{ matrix.n }}.ipynb
           echo "Site ${{ matrix.n }}" > ./html/site_${{ matrix.n }}.html
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add . && git commit --allow-empty -m "updated Site ${{ matrix.n }}"
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+      - name: Archive fig_${{matrix.n}}.html
+        uses: actions/upload-artifact@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: fig_${{ matrix.n }}
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
-        with:
-          branch: fig_${{ matrix.n }}
+          name: up fig_${{ matrix.n }}.html goes
+          path: ./html
+          #git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          #git config --local user.name "github-actions[bot]"
+          #git add . && git commit --allow-empty -m "updated Site ${{ matrix.n }}"
