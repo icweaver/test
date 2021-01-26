@@ -1,17 +1,27 @@
-name: merge branches
+name: automerge
 on:
-  push:
-    branches:
-      - 'fig_*'
+  pull_request:
+    types:
+      - labeled
+      - unlabeled
+      - synchronize
+      - opened
+      - edited
+      - ready_for_review
+      - reopened
+      - unlocked
+  pull_request_review:
+    types:
+      - submitted
+  check_suite:
+    types:
+      - completed
+  status: {}
 jobs:
-  merge-branch:
+  automerge:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-
-      - name: Merge branch
-        uses: devmasx/merge-branch@v1.3.1
-        with:
-          type: now
-          target_branch: main
-          github_token: ${{ github.token }}
+      - name: automerge
+        uses: "pascalgn/automerge-action@v0.13.0"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
