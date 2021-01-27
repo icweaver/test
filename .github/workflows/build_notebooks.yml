@@ -11,60 +11,44 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  job_1:
-    # This workflow contains a single job called "build"
-    build:
-      # The type of runner that the job will run on
-      runs-on: ubuntu-latest
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
 
-      defaults:
-        run:
-          shell: bash -l {0}
+    defaults:
+      run:
+        shell: bash -l {0}
 
-      strategy:
-        matrix:
-          n: ['01', '02', '03']
+    strategy:
+      matrix:
+        n: ['01', '02', '03']
 
-      # Steps represent a sequence of tasks that will be executed as part of the job
-      steps:
-        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-        - uses: actions/checkout@v2
-        - run: |
-            #jupyter nbconvert --to html --output-dir='./html' --execute ./notebooks/fig_${{ matrix.n }}.ipynb
-            echo "Site ${{ matrix.n }}" > ./html/site_${{ matrix.n }}.html
-        - name: Archive fig_${{matrix.n}}.html
-          uses: actions/upload-artifact@v2
-          with:
-            name: fig_${{ matrix.n }}.html
-            path: ./html/fig_${{ matrix.n }}.html
-            #git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            #git config --local user.name "github-actions[bot]"
-            #git add . && git commit --allow-empty -m "updated Site ${{ matrix.n }}"
-  job_2:
-    # This workflow contains a single job called "build"
-    build:
-      # The type of runner that the job will run on
-      runs-on: ubuntu-latest
-
-      defaults:
-        run:
-          shell: bash -l {0}
-
-      # Steps represent a sequence of tasks that will be executed as part of the job
-      steps:
-        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-        - uses: actions/checkout@v2
-        - name: Download math result for job 2
-          uses: actions/download-artifact@v2
-          with:
-            name: fig_*
-            path: ./html/
-          run: |
-            git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git config --local user.name "github-actions[bot]"
-            git add . && git commit --allow-empty -m "updated Site ${{ matrix.n }}"
-            - name: Push changes
-          uses: ad-m/github-push-action@master
-          with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            branch: main
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - run: |
+          #jupyter nbconvert --to html --output-dir='./html' --execute ./notebooks/fig_${{ matrix.n }}.ipynb
+          echo "Site ${{ matrix.n }}" > ./html/site_${{ matrix.n }}.html
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add . && git commit --allow-empty -m "updated Site ${{ matrix.n }}"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: fig_${{ matrix.n }}
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: fig_${{ matrix.n }}
+      - name: Trigger next workflow
+        if: success()
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_GHA_PAT }}
+          repository: ${{ github.repository }}
+          event-type: trigger-workflow-2
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
