@@ -44,6 +44,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: fig_${{ matrix.n }}
+          labels: automerge
       - name: Trigger next workflow
         if: success()
         uses: peter-evans/repository-dispatch@v1
